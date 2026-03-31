@@ -1,0 +1,107 @@
+@import url("https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500;600&display=swap");
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* ─── Base Resets ──────────────────────────────────────────────────────────── */
+
+@layer base {
+  * {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+  }
+
+  html {
+    scroll-behavior: smooth;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
+
+  body {
+    font-family: "Inter", system-ui, -apple-system, sans-serif;
+    background-color: #0a0a1a;
+    color: #e0e7ff;
+    min-height: 100vh;
+  }
+
+  /* Custom scrollbar */
+  ::-webkit-scrollbar {
+    width: 6px;
+  }
+
+  ::-webkit-scrollbar-track {
+    background: #0f0f2e;
+  }
+
+  ::-webkit-scrollbar-thumb {
+    background: #312e81;
+    border-radius: 3px;
+  }
+
+  ::-webkit-scrollbar-thumb:hover {
+    background: #4338ca;
+  }
+}
+
+/* ─── Background Effects ──────────────────────────────────────────────────── */
+
+.stellar-bg {
+  position: fixed;
+  inset: 0;
+  z-index: -1;
+  overflow: hidden;
+  background:
+    radial-gradient(ellipse at 20% 0%, rgba(99, 102, 241, 0.08) 0%, transparent 50%),
+    radial-gradient(ellipse at 80% 100%, rgba(217, 70, 239, 0.06) 0%, transparent 50%),
+    radial-gradient(ellipse at 50% 50%, rgba(10, 10, 26, 1) 0%, rgba(10, 10, 26, 1) 100%);
+}
+
+/* Animated star particles */
+.stellar-bg::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background-image:
+    radial-gradient(1px 1px at 10% 20%, rgba(255, 255, 255, 0.3), transparent),
+    radial-gradient(1px 1px at 30% 65%, rgba(255, 255, 255, 0.2), transparent),
+    radial-gradient(1px 1px at 50% 10%, rgba(255, 255, 255, 0.25), transparent),
+    radial-gradient(1px 1px at 70% 40%, rgba(255, 255, 255, 0.15), transparent),
+    radial-gradient(1px 1px at 85% 75%, rgba(255, 255, 255, 0.3), transparent),
+    radial-gradient(1px 1px at 15% 80%, rgba(255, 255, 255, 0.2), transparent),
+    radial-gradient(1px 1px at 45% 55%, rgba(255, 255, 255, 0.15), transparent),
+    radial-gradient(1.5px 1.5px at 60% 85%, rgba(165, 180, 252, 0.4), transparent),
+    radial-gradient(1.5px 1.5px at 25% 35%, rgba(240, 171, 252, 0.3), transparent),
+    radial-gradient(1px 1px at 90% 15%, rgba(255, 255, 255, 0.25), transparent);
+  animation: twinkle 8s ease-in-out infinite alternate;
+}
+
+@keyframes twinkle {
+  0% { opacity: 0.6; }
+  50% { opacity: 1; }
+  100% { opacity: 0.7; }
+}
+
+/* ─── Glassmorphism Card ──────────────────────────────────────────────────── */
+
+.glass-card {
+  background: rgba(15, 15, 46, 0.5);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border: 1px solid rgba(99, 102, 241, 0.1);
+  border-radius: 1.5rem;
+}
+
+.glass-card-hover:hover {
+  border-color: rgba(99, 102, 241, 0.25);
+  box-shadow: 0 0 30px rgba(99, 102, 241, 0.08);
+}
+
+/* ─── Focus styles ────────────────────────────────────────────────────────── */
+
+@layer utilities {
+  .focus-ring {
+    @apply outline-none ring-2 ring-stellar-500/30 ring-offset-2 ring-offset-cosmos-900;
+  }
+}
