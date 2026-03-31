@@ -42,7 +42,7 @@ The primary dashboard unlocks fully authenticated, showing your active wallet co
 
 ### Multi-Account Dropdown Manager
 An integrated, smartly engineered dropdown bridging Freighter limitation. It allows you to seamlessly bind, input natively, and hot-swap between multiple unique Testnet identities while persisting them safely locally into your dashboard.
-![Multiple Accounts Manager](./screenshots/multiple_accounts.png)
+![Multiple Accounts Manager](./screenshots/multiple_wallets.png)
 
 ### Balance Displayed
 Fetching your Horizon Testnet available XLM balance instantly within an interactive bottom sheet layout.
