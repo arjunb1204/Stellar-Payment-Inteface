@@ -15,9 +15,11 @@ export function useWallet() {
     balance,
     connectionStatus,
     error,
+    activeNetwork,
     connect,
     disconnect,
     switchAccount,
+    switchNetwork,
     refreshBalance,
     isFreighterInstalled,
   } = useWalletContext();
@@ -33,6 +35,7 @@ export function useWallet() {
     balance,
     connectionStatus,
     error,
+    activeNetwork,
     isConnected,
     isConnecting,
     hasError,
@@ -42,6 +45,7 @@ export function useWallet() {
     connect,
     disconnect,
     switchAccount,
+    switchNetwork,
     refreshBalance,
   };
 }

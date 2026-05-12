@@ -7,8 +7,8 @@ import { truncateAddress } from "@/lib/stellar";
 import { getExplorerTxUrl } from "@/lib/constants";
 
 export function TransactionHistory() {
-  const { publicKey } = useWallet();
-  const { history, isLoading, error, fetchHistory } = useHistory(publicKey);
+  const { publicKey, activeNetwork } = useWallet();
+  const { history, isLoading, error, fetchHistory } = useHistory(publicKey, activeNetwork);
 
   if (!publicKey) return null;
 
@@ -59,18 +59,18 @@ export function TransactionHistory() {
             return (
               <a
                 key={tx.id}
-                href={getExplorerTxUrl(tx.id)}
+                href={getExplorerTxUrl(tx.id, activeNetwork)}
                 target="_blank"
                 rel="noopener noreferrer"
                 className="group flex items-center justify-between border-b border-zinc-800/60 py-4 transition-all hover:bg-zinc-800/20"
               >
                 <div className="flex items-center gap-4">
                   <div className={`flex h-12 w-12 shrink-0 items-center justify-center rounded-full overflow-hidden border-2 border-zinc-700/50 bg-zinc-800 ${isSend ? "opacity-90" : "opacity-100"}`}>
-                     {isCreateAccount ? (
-                       <img src="https://stellar.org/favicon.ico" alt="bot" className="h-full w-full object-cover" />
-                     ) : (
-                       <img src={`https://api.dicebear.com/7.x/notionists/svg?seed=${counterparty}`} alt="avatar" className="h-full w-full object-cover" />
-                     )}
+                    {isCreateAccount ? (
+                      <img src="https://stellar.org/favicon.ico" alt="bot" className="h-full w-full object-cover" />
+                    ) : (
+                      <img src={`https://api.dicebear.com/7.x/notionists/svg?seed=${counterparty}`} alt="avatar" className="h-full w-full object-cover" />
+                    )}
                   </div>
                   <div>
                     <h4 className="text-[15px] font-medium text-zinc-100 group-hover:text-white">

@@ -10,8 +10,17 @@ export const STELLAR_TESTNET: NetworkConfig = {
   friendbotUrl: "https://friendbot.stellar.org",
 };
 
-/** Active network — change this to switch between testnet/mainnet */
-export const ACTIVE_NETWORK: NetworkConfig = STELLAR_TESTNET;
+export const STELLAR_MAINNET: NetworkConfig = {
+  name: "Stellar Mainnet",
+  networkPassphrase: "Public Global Stellar Network ; September 2015",
+  horizonUrl: "https://horizon.stellar.org",
+  explorerUrl: "https://stellar.expert/explorer/public",
+};
+
+export const SUPPORTED_NETWORKS: Record<string, NetworkConfig> = {
+  [STELLAR_TESTNET.networkPassphrase]: STELLAR_TESTNET,
+  [STELLAR_MAINNET.networkPassphrase]: STELLAR_MAINNET,
+};
 
 // ─── Dummy Testnet Destination ───────────────────────────────────────────────
 
@@ -36,10 +45,10 @@ export const FREIGHTER_DOWNLOAD_URL = "https://www.freighter.app/";
 
 // ─── Explorer Helpers ────────────────────────────────────────────────────────
 
-export function getExplorerTxUrl(txHash: string): string {
-  return `${ACTIVE_NETWORK.explorerUrl}/tx/${txHash}`;
+export function getExplorerTxUrl(txHash: string, network: NetworkConfig): string {
+  return `${network.explorerUrl}/tx/${txHash}`;
 }
 
-export function getExplorerAccountUrl(accountId: string): string {
-  return `${ACTIVE_NETWORK.explorerUrl}/account/${accountId}`;
+export function getExplorerAccountUrl(accountId: string, network: NetworkConfig): string {
+  return `${network.explorerUrl}/account/${accountId}`;
 }

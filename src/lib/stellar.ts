@@ -1,16 +1,16 @@
 import * as StellarSdk from "@stellar/stellar-sdk";
-import { ACTIVE_NETWORK, BASE_FEE, TX_TIMEOUT_SECONDS } from "./constants";
-import type { TransactionParams } from "@/types";
+import { BASE_FEE, TX_TIMEOUT_SECONDS } from "./constants";
+import type { TransactionParams, NetworkConfig } from "@/types";
 
 // ─── Horizon Server Singleton ────────────────────────────────────────────────
 
-let _server: StellarSdk.Horizon.Server | null = null;
+let _servers: Record<string, StellarSdk.Horizon.Server> = {};
 
-export function getServer(): StellarSdk.Horizon.Server {
-  if (!_server) {
-    _server = new StellarSdk.Horizon.Server(ACTIVE_NETWORK.horizonUrl);
+export function getServer(network: NetworkConfig): StellarSdk.Horizon.Server {
+  if (!_servers[network.horizonUrl]) {
+    _servers[network.horizonUrl] = new StellarSdk.Horizon.Server(network.horizonUrl);
   }
-  return _server;
+  return _servers[network.horizonUrl];
 }
 
 // ─── Account & Balance ───────────────────────────────────────────────────────
@@ -20,10 +20,11 @@ export function getServer(): StellarSdk.Horizon.Server {
  * Throws a descriptive error if the account doesn't exist (not funded).
  */
 export async function loadAccount(
-  publicKey: string
+  publicKey: string,
+  network: NetworkConfig
 ): Promise<StellarSdk.Horizon.AccountResponse> {
   try {
-    const server = getServer();
+    const server = getServer(network);
     return await server.loadAccount(publicKey);
   } catch (err: unknown) {
     if (
@@ -42,8 +43,8 @@ export async function loadAccount(
  * Fetch the native XLM balance for a given public key.
  * Returns the balance as a string with up to 7 decimal places.
  */
-export async function fetchNativeBalance(publicKey: string): Promise<string> {
-  const account = await loadAccount(publicKey);
+export async function fetchNativeBalance(publicKey: string, network: NetworkConfig): Promise<string> {
+  const account = await loadAccount(publicKey, network);
   const nativeBalance = account.balances.find(
     (b) => b.asset_type === "native"
   );
@@ -58,14 +59,15 @@ export async function fetchNativeBalance(publicKey: string): Promise<string> {
  */
 export async function buildPaymentTransaction(
   sourcePublicKey: string,
-  params: TransactionParams
+  params: TransactionParams,
+  network: NetworkConfig
 ): Promise<string> {
-  const server = getServer();
+  const server = getServer(network);
   const sourceAccount = await server.loadAccount(sourcePublicKey);
 
   const transactionBuilder = new StellarSdk.TransactionBuilder(sourceAccount, {
     fee: BASE_FEE,
-    networkPassphrase: ACTIVE_NETWORK.networkPassphrase,
+    networkPassphrase: network.networkPassphrase,
   });
 
   transactionBuilder.addOperation(
@@ -91,12 +93,13 @@ export async function buildPaymentTransaction(
  * Returns the transaction hash on success.
  */
 export async function submitTransaction(
-  signedXdr: string
+  signedXdr: string,
+  network: NetworkConfig
 ): Promise<string> {
-  const server = getServer();
+  const server = getServer(network);
   const transaction = StellarSdk.TransactionBuilder.fromXDR(
     signedXdr,
-    ACTIVE_NETWORK.networkPassphrase
+    network.networkPassphrase
   );
 
   try {
@@ -149,13 +152,13 @@ export async function submitTransaction(
 /**
  * Fund a testnet account using Friendbot.
  */
-export async function fundTestnetAccount(publicKey: string): Promise<void> {
-  if (!ACTIVE_NETWORK.friendbotUrl) {
+export async function fundTestnetAccount(publicKey: string, network: NetworkConfig): Promise<void> {
+  if (!network.friendbotUrl) {
     throw new Error("Friendbot is only available on testnet.");
   }
 
   const response = await fetch(
-    `${ACTIVE_NETWORK.friendbotUrl}?addr=${encodeURIComponent(publicKey)}`
+    `${network.friendbotUrl}?addr=${encodeURIComponent(publicKey)}`
   );
 
   if (!response.ok) {

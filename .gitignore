@@ -16,3 +16,7 @@ pnpm-debug.log*
 lerna-debug.log*
 .vercel
 *.tsbuildinfo
+
+# Rust / Soroban contract build artifacts
+contracts/*/target/
+contracts/*/test_snapshots/

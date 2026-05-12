@@ -3,6 +3,7 @@
 import React, { useState, useEffect } from "react";
 import type { TransactionStatus } from "@/types";
 import { getExplorerTxUrl, TX_TIMEOUT_SECONDS } from "@/lib/constants";
+import { useWallet } from "@/hooks/useWallet";
 
 interface TransactionFeedbackProps {
   status: TransactionStatus;
@@ -80,6 +81,7 @@ export function TransactionFeedback({
   onReset,
   onClose,
 }: TransactionFeedbackProps) {
+  const { activeNetwork } = useWallet();
   const [timeLeft, setTimeLeft] = useState(TX_TIMEOUT_SECONDS);
 
   useEffect(() => {
@@ -153,8 +155,8 @@ export function TransactionFeedback({
             </code>
           </div>
           <a
-            id="explorer-link"
-            href={getExplorerTxUrl(txHash)}
+            id="view-explorer-btn"
+            href={getExplorerTxUrl(txHash, activeNetwork)}
             target="_blank"
             rel="noopener noreferrer"
             className="inline-flex items-center gap-1.5 text-xs font-medium text-stellar-400 underline decoration-dotted transition-colors hover:text-stellar-200"

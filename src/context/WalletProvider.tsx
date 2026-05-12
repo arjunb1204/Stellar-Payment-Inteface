@@ -8,9 +8,9 @@ import React, {
   useEffect,
   useRef,
 } from "react";
-import type { WalletContextValue, ConnectionStatus } from "@/types";
+import type { WalletContextValue, ConnectionStatus, NetworkConfig } from "@/types";
 import { fetchNativeBalance } from "@/lib/stellar";
-import { ACTIVE_NETWORK, FREIGHTER_DOWNLOAD_URL } from "@/lib/constants";
+import { STELLAR_TESTNET, SUPPORTED_NETWORKS, FREIGHTER_DOWNLOAD_URL } from "@/lib/constants";
 
 // ─── Context ─────────────────────────────────────────────────────────────────
 
@@ -21,6 +21,7 @@ const WalletContext = createContext<WalletContextValue | undefined>(undefined);
 export function WalletProvider({ children }: { children: React.ReactNode }) {
   const [publicKey, setPublicKey] = useState<string | null>(null);
   const [accounts, setAccounts] = useState<string[]>([]);
+  const [activeNetwork, setActiveNetwork] = useState<NetworkConfig>(STELLAR_TESTNET);
   const [balance, setBalance] = useState<string | null>(null);
   const [connectionStatus, setConnectionStatus] = useState<ConnectionStatus>("disconnected");
   const [error, setError] = useState<string | null>(null);
@@ -76,7 +77,7 @@ export function WalletProvider({ children }: { children: React.ReactNode }) {
     if (!key) return;
 
     try {
-      const xlmBalance = await fetchNativeBalance(key);
+      const xlmBalance = await fetchNativeBalance(key, activeNetwork);
       setBalance(xlmBalance);
     } catch (err: unknown) {
       const message =
@@ -133,7 +134,7 @@ export function WalletProvider({ children }: { children: React.ReactNode }) {
         throw new Error("Invalid public key received from Freighter.");
       }
 
-      // Verify we're on the right network
+      // Synchronize with Freighter's Selected Network 
       try {
         const networkResult = await freighterApi.getNetwork();
         const networkPassphrase =
@@ -145,17 +146,11 @@ export function WalletProvider({ children }: { children: React.ReactNode }) {
             ? (networkResult as { networkPassphrase: string }).networkPassphrase
             : null;
 
-        if (
-          networkPassphrase &&
-          networkPassphrase !== ACTIVE_NETWORK.networkPassphrase
-        ) {
-          console.warn(
-            `Freighter is on a different network. Expected: ${ACTIVE_NETWORK.name}`
-          );
+        if (networkPassphrase && SUPPORTED_NETWORKS[networkPassphrase]) {
+          setActiveNetwork(SUPPORTED_NETWORKS[networkPassphrase]);
         }
       } catch {
-        // Network check is non-critical — continue anyway
-        console.warn("Could not verify Freighter network.");
+        // Network check is non-critical — default resolves perfectly
       }
 
       setPublicKey(address);
@@ -164,7 +159,13 @@ export function WalletProvider({ children }: { children: React.ReactNode }) {
 
       // Fetch balance after connection
       try {
-        const xlmBalance = await fetchNativeBalance(address);
+        const networkResult = await freighterApi.getNetwork();
+        const networkPassphrase = typeof networkResult === "string" ? networkResult : (networkResult as any).networkPassphrase;
+        
+        const xlmBalance = await fetchNativeBalance(
+          address, 
+          networkPassphrase && SUPPORTED_NETWORKS[networkPassphrase] ? SUPPORTED_NETWORKS[networkPassphrase] : activeNetwork
+        );
         setBalance(xlmBalance);
       } catch {
         // Balance fetch failure is non-fatal on connect
@@ -199,6 +200,11 @@ export function WalletProvider({ children }: { children: React.ReactNode }) {
     setBalance(null); // will auto-fetch via interval/effect
   }, []);
 
+  const switchNetwork = useCallback((network: NetworkConfig) => {
+    setActiveNetwork(network);
+    setBalance(null); // force a re-fetch of balances on new network boundaries
+  }, []);
+
   // ── Disconnect ───────────────────────────────────────────────────────────
 
   const disconnect = useCallback(() => {
@@ -226,8 +232,10 @@ export function WalletProvider({ children }: { children: React.ReactNode }) {
     balance,
     connectionStatus,
     error,
+    activeNetwork,
     connect,
     switchAccount,
+    switchNetwork,
     disconnect,
     refreshBalance,
     isFreighterInstalled,

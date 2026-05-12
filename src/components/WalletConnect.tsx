@@ -19,6 +19,7 @@ export function WalletConnect() {
     accounts,
     connectionStatus,
     error,
+    activeNetwork,
     connect,
     disconnect,
     switchAccount,
@@ -186,7 +187,7 @@ export function WalletConnect() {
             </button>
             <div className="mt-1 flex justify-center pb-1">
                 <a 
-                  href={getExplorerAccountUrl(publicKey)}
+                  href={getExplorerAccountUrl(publicKey, activeNetwork)}
                   target="_blank"
                   rel="noopener noreferrer" 
                   className="text-[10px] text-zinc-500 hover:text-zinc-300 uppercase tracking-widest font-semibold flex items-center gap-1"

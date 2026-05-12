@@ -2,6 +2,7 @@
 
 import { useState, useCallback, useEffect } from "react";
 import { getServer } from "@/lib/stellar";
+import type { NetworkConfig } from "@/types";
 
 export interface TxRecord {
   id: string;
@@ -13,7 +14,7 @@ export interface TxRecord {
   created_at: string;
 }
 
-export function useHistory(publicKey: string | null) {
+export function useHistory(publicKey: string | null, activeNetwork: NetworkConfig) {
   const [history, setHistory] = useState<TxRecord[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -23,7 +24,7 @@ export function useHistory(publicKey: string | null) {
     setIsLoading(true);
     setError(null);
     try {
-      const server = getServer();
+      const server = getServer(activeNetwork);
       
       // Fetch the last 20 payments/transfers involving this account
       const response = await server
@@ -64,7 +65,7 @@ export function useHistory(publicKey: string | null) {
     } finally {
       setIsLoading(false);
     }
-  }, [publicKey]);
+  }, [publicKey, activeNetwork]);
 
   useEffect(() => {
     fetchHistory();

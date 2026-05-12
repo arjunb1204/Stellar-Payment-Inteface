@@ -3,7 +3,6 @@
 import { useState, useCallback } from "react";
 import type { TransactionState, TransactionParams } from "@/types";
 import { buildPaymentTransaction, submitTransaction } from "@/lib/stellar";
-import { ACTIVE_NETWORK } from "@/lib/constants";
 import { useWallet } from "./useWallet";
 
 /**
@@ -13,7 +12,7 @@ import { useWallet } from "./useWallet";
  * so the UI can show appropriate feedback at each step.
  */
 export function useTransaction() {
-  const { publicKey, refreshBalance } = useWallet();
+  const { publicKey, activeNetwork, refreshBalance } = useWallet();
 
   const [state, setState] = useState<TransactionState>({
     status: "idle",
@@ -42,7 +41,7 @@ export function useTransaction() {
       try {
         // ── Step 1: Build the transaction ──────────────────────────────
 
-        const unsignedXdr = await buildPaymentTransaction(publicKey, params);
+        const unsignedXdr = await buildPaymentTransaction(publicKey, params, activeNetwork);
 
         // ── Step 2: Sign via Freighter ─────────────────────────────────
 
@@ -51,7 +50,7 @@ export function useTransaction() {
         const freighterApi = await import("@stellar/freighter-api");
 
         const signResult = await freighterApi.signTransaction(unsignedXdr, {
-          networkPassphrase: ACTIVE_NETWORK.networkPassphrase,
+          networkPassphrase: activeNetwork.networkPassphrase,
         });
 
         // Handle response shape variations
@@ -72,7 +71,7 @@ export function useTransaction() {
 
         setState((prev) => ({ ...prev, status: "submitting" }));
 
-        const txHash = await submitTransaction(signedXdr);
+        const txHash = await submitTransaction(signedXdr, activeNetwork);
 
         setState({ status: "success", txHash, error: null });
 

@@ -13,6 +13,8 @@ export interface WalletState {
   connectionStatus: ConnectionStatus;
   /** Human-readable error message, if any */
   error: string | null;
+  /** Current active Stellar network */
+  activeNetwork: NetworkConfig;
 }
 
 // ─── Wallet Context ──────────────────────────────────────────────────────────
@@ -22,6 +24,8 @@ export interface WalletContextValue extends WalletState {
   connect: () => Promise<void>;
   /** Switch to a different connected account */
   switchAccount: (address: string) => void;
+  /** Hot-swap the underlying Stellar Network (e.g. Testnet -> Mainnet) */
+  switchNetwork: (network: NetworkConfig) => void;
   /** Cleanly disconnect all accounts */
   disconnect: () => void;
   /** Refresh the XLM balance for the connected wallet */

@@ -29,11 +29,18 @@ export function TransactionPanel({
   initialMemo,
   onClose,
 }: TransactionPanelProps = {}) {
-  const { publicKey, balance, isConnected, refreshBalance } = useWallet();
+  const {
+    publicKey,
+    balance,
+    activeNetwork,
+    isConnected,
+    refreshBalance,
+  } = useWallet();
+
   const {
     status,
     txHash,
-    error,
+    error: txError,
     sendTransaction,
     resetTransaction,
     isProcessing,
@@ -52,6 +59,26 @@ export function TransactionPanel({
     if (initialAmount) setAmount(initialAmount);
     if (initialMemo) setMemo(initialMemo);
   }, [initialDestination, initialAmount, initialMemo]);
+
+  // ── Handlers ───────────────────────────────────────────────────────────
+
+  const handleFundTestnet = async () => {
+    if (!publicKey) return;
+    setIsFunding(true);
+    setFundingMessage(null);
+
+    try {
+      await fundTestnetAccount(publicKey, activeNetwork);
+      setFundingMessage("Testnet account funded successfully! Refreshing balance...");
+      await refreshBalance();
+      // Clear success message after 3s
+      setTimeout(() => setFundingMessage(null), 3000);
+    } catch (error: any) {
+      setFundingMessage(error.message || "Failed to fund testnet account.");
+    } finally {
+      setIsFunding(false);
+    }
+  };
 
   // ── Not connected ──────────────────────────────────────────────────────
 
@@ -84,23 +111,7 @@ export function TransactionPanel({
   }
 
   // ── Fund account via Friendbot ─────────────────────────────────────────
-
-  const handleFundAccount = async () => {
-    setIsFunding(true);
-    setFundingMessage(null);
-    try {
-      await fundTestnetAccount(publicKey);
-      setFundingMessage("Account funded successfully! Refreshing balance...");
-      await refreshBalance();
-      setFundingMessage("Account funded! Balance updated.");
-    } catch (err: unknown) {
-      setFundingMessage(
-        err instanceof Error ? err.message : "Funding failed."
-      );
-    } finally {
-      setIsFunding(false);
-    }
-  };
+  // Note: handleFundTestnet already exists above to process funding.
 
   // ── Send transaction ───────────────────────────────────────────────────
 
@@ -190,7 +201,7 @@ export function TransactionPanel({
             </p>
             <button
               id="fund-account-btn"
-              onClick={handleFundAccount}
+              onClick={handleFundTestnet}
               disabled={isFunding}
               className="mt-2 rounded-lg border border-amber-500/20 bg-amber-900/20 px-3 py-1.5 text-xs font-medium text-amber-300 transition-all duration-300 hover:border-amber-400/40 hover:text-amber-200 disabled:cursor-not-allowed disabled:opacity-50"
             >
@@ -306,7 +317,7 @@ export function TransactionPanel({
         <TransactionFeedback
           status={status}
           txHash={txHash}
-          error={error}
+          error={txError}
           onReset={resetTransaction}
           onClose={onClose}
         />
